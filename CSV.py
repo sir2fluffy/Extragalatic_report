@@ -8,8 +8,10 @@ class CSV:
     row_count = 0
     column_count = 0
     
+    row_count_data = -1
     
-    def __init__(self,name):
+    
+    def __init__(self,name,skip_first = True):
         path = f"{name}.csv"
         self.name = name
         self.path = path
@@ -17,6 +19,7 @@ class CSV:
             reader = csv.reader(outfile)
             row_count = sum(1 for row in reader)
             self.row_count = row_count
+            self.row_count_data = row_count - 1
         with open(self.path, 'r', newline='') as outfile:
             reader = csv.reader(outfile)
             for index,row in enumerate(reader):
@@ -52,7 +55,9 @@ class CSV:
                     writer.writerow(row)
         
     def read_all(self,skip_first = True):
-        temp = np.zeros((self.row_count,self.column_count))
+        
+        rows = self.row_count - int(skip_first)
+        temp = np.zeros((rows,self.column_count))
         
         
         with open(self.path, 'r', newline='') as outfile:
@@ -60,7 +65,7 @@ class CSV:
             for index,row in enumerate(reader):
 
                 if index >= int(skip_first):
-                    temp[index,:] = row
+                    temp[index- int(skip_first),:] = row
                         
 
             return temp
