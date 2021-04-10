@@ -3,6 +3,7 @@ import numpy as np
 
 
 class CSV:
+    "convineince module I wrote to handle csvs, slow but simple"
     name = ''
     path = '.csv'
     row_count = 0
