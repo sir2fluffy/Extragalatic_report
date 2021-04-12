@@ -12,7 +12,7 @@ from calc_kcor import calc_kcor
 
 
 from astropy.cosmology import Planck15 as cosmo
-import astropy.constants as const
+
 
 import numpy as np
 import matplotlib.pyplot as pl
@@ -27,11 +27,17 @@ print('read data')
 
 
 
+
+
+
+
+
 for index,row in enumerate(SDSS_data):
+    
     if  index % 1000 ==0:
         pass
     z,zErr_noqso,cModelMag_r,cModelMagErr_r,cModelMag_u,cModelMagErr_u,petroRad_r,petroRadErr_r,modelMag_r,modelMag_u, petroMag_r ,petroMagErr_r,  petroMagErr_u, petroMag_u, Pr90= row
-    
+
     
     dist = cosmo.luminosity_distance(z).value # in Mpc
 
@@ -46,9 +52,33 @@ for index,row in enumerate(SDSS_data):
     if index % 5000 == 0:
         print(index)
 
+array = (SDSS_data[1:,0]*100).astype(int)
+print(array)
+y = np.bincount(array)
+ii = np.nonzero(y)[0]
+freq = (np.vstack((ii,y[ii])).T)#.astype(float)
+
+
+
+
+
+pl.plot(freq[:,0]/100,freq[:,1],)
+pl.rcParams['figure.figsize']  = 16,9
+pl.rcParams.update({'font.size': 20})
+pl.title('Frquency of redshift in smaple')
+pl.xlabel('Redshift, z')
+pl.ylabel('Frequency')
+pl.show()
+
+
+
+# max(freq[:,1])
+# (np.where(freq[:,1] == 16270))
+# print(pos)
+# print(freq[33,0])
 
 M_cut = -22.6
-Z_cut = .4
+Z_cut = .32
 
 pl.scatter(SDSS_data[:,0],calculated[:,1],s=.001)
 pl.plot([-.1,Z_cut,Z_cut],[M_cut,M_cut,-27],color = 'red')
@@ -93,7 +123,7 @@ print(red)
 fit_list = []
 max_z, min_z = 0, .5
 
-
+z_error = []
 
 
 
@@ -109,24 +139,27 @@ for index,galaxy_index in enumerate(selected_galaxies):
        #https://www.sdss.org/dr12/algorithms/magnitudes/#:~:text=In%20SDSS%2DIII%2C%20we%20express,are%20a%20convenient%20linear%20unit.&text=To%20relate%20these%20quantities%20to,%5D%20%E2%80%93%202.5%20log10%20f%20.
        
     #flux = 10**(-.4*petroMag_r)   #wikipedia   -6.18854450e+00
-    flux = 10**((petroMag_r-22.5)/-2.5)   #sdds simple    -6.18853651   <-- use this one
-    #flux = ((np.sinh(petroMag_r/(-2.5*np.log(10)))-np.log(24.8) )/(21*24.8))#sdds nasty  6.08410878e+00
+    #flux = 10**((petroMag_r-22.5)/-2.5)   #sdds simple    -6.18853651   <-- use this one
+    b = 1.2e-10
+    flux = np.sinh((m/(-2.5/ln(10)))-np.log(b))#sdds nasty  6.08410878e+00
     mu = flux/(np.pi * (petroRad_r**2))
 
     sigma_m = calculated[galaxy_index,0]
     sigma_r = petroRadErr_r
     
-    dudm = np.log(.4)*np.exp(np.log(.4)*(petroMag_r-22.5))/(np.pi*(petroRad_r**2))
+    dudm = np.log(.4)*np.exp(np.log(.4)*((petroMag_r-22.5)/2.5))/(np.pi*(petroRad_r**2))
     dudr = ((2**((-petroMag_r+22.5)/-2.5)) * (5**((-petroMag_r+22.5)/-2.5)))/(np.pi * (petroRad_r**3))
 
     sigma_mu = np.sqrt(((dudm*sigma_m)**2)+((dudr*sigma_r)**2))
 
     fit_list.append([z, mu, sigma_mu])
-
+    z_error.append(zErr_noqso)
 print(len(fit_list))
 fit_data = np.zeros((len(fit_list),3))
 for index,data in enumerate(fit_list):
+
     fit_data[index,:] = data
+    
     
 z_fit = np.linspace(min_z,max_z,1000)
 from scipy import optimize as sc
@@ -134,7 +167,7 @@ def fit_func(z,a,c):
     mu = c*(((z+1)**a))
     return mu
 
-#para, cov = sc.curve_fit(fit_func,fit_data[:,0],fit_data[:,1],sigma = fit_data[:,2],p0 = [-4,0]) # with error a = -10
+para, cov = sc.curve_fit(fit_func,fit_data[:,0],fit_data[:,1],sigma = fit_data[:,2],p0 = [-4,0]) # with error a = -10
 para, cov = sc.curve_fit(fit_func,fit_data[:,0],fit_data[:,1],p0 = [-4,0])# without error a= -6
 print(para)
 print(cov)
@@ -156,7 +189,7 @@ pl.errorbar(fit_data[:,0],fit_data[:,1],yerr = fit_data[:,2],fmt = '+',color = '
 pl.rcParams.update({'font.size': 20})
 pl.rcParams['figure.figsize']  = 16,9
 pl.xlabel('Z')
-pl.ylabel('mu')
+pl.ylabel('μ')
 pl.title('z against μ, with error bars')
 pl.xlabel('Redshift, z')
 pl.ylabel('Surface brightness, μ')
