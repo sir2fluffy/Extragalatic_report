@@ -141,7 +141,7 @@ for index,galaxy_index in enumerate(selected_galaxies):
     #flux = 10**(-.4*petroMag_r)   #wikipedia   -6.18854450e+00
     #flux = 10**((petroMag_r-22.5)/-2.5)   #sdds simple    -6.18853651   <-- use this one
     b = 1.2e-10
-    flux = np.sinh((m/(-2.5/ln(10)))-np.log(b))#sdds nasty  6.08410878e+00
+    flux = np.sinh((petroMag_r/(-2.5/np.log(10)))-np.log(b))#sdds nasty  6.08410878e+00
     mu = flux/(np.pi * (petroRad_r**2))
 
     sigma_m = calculated[galaxy_index,0]
