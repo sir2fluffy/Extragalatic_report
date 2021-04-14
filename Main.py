@@ -65,7 +65,7 @@ freq = (np.vstack((ii,y[ii])).T)#.astype(float)
 pl.plot(freq[:,0]/100,freq[:,1],)
 pl.rcParams['figure.figsize']  = 16,9
 pl.rcParams.update({'font.size': 20})
-pl.title('Frquency of redshift in smaple')
+pl.title('Frequency of redshift in sample')
 pl.xlabel('Redshift, z')
 pl.ylabel('Frequency')
 pl.show()
